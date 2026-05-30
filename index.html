@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Valyuta Hisoblagich</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px 30px;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .title {
+            text-align: center;
+            color: #1a1a2e;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 30px;
+            letter-spacing: 1px;
+            border-bottom: 3px solid #0f3460;
+            padding-bottom: 15px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .amount-input {
+            flex: 2;
+            padding: 14px 18px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 18px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .amount-input:focus {
+            border-color: #0f3460;
+        }
+
+        .currency-select {
+            flex: 1;
+            padding: 14px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            background: white;
+            cursor: pointer;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .currency-select:focus {
+            border-color: #0f3460;
+        }
+
+        .calculate-btn {
+            width: 100%;
+            padding: 16px;
+            background: #0f3460;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.1s;
+            letter-spacing: 1px;
+        }
+
+        .calculate-btn:hover {
+            background: #1a1a2e;
+        }
+
+        .calculate-btn:active {
+            transform: scale(0.98);
+        }
+
+        .result {
+            margin-top: 25px;
+            padding: 20px;
+            background: #f0f4ff;
+            border-radius: 12px;
+            text-align: center;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px dashed #0f3460;
+        }
+
+        .result-text {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1a1a2e;
+        }
+
+        .note {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 12px;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1 class="title">💱 Valyuta Hisoblagich</h1>
+
+        <div class="input-group">
+            <label>Miqdor va Valyuta</label>
+            <div class="input-row">
+                <input 
+                    type="number" 
+                    class="amount-input" 
+                    id="amount" 
+                    placeholder="Miqdorni kiriting" 
+                    min="0" 
+                    step="0.01"
+                >
+                <select class="currency-select" id="currencyFrom">
+                    <option value="USD">🇺🇸 USD</option>
+                    <option value="EUR">🇪🇺 EUR</option>
+                    <option value="UZS" selected>🇺🇿 UZS</option>
+                    <option value="RUB">🇷🇺 RUB</option>
+                    <option value="GBP">🇬🇧 GBP</option>
+                    <option value="CNY">🇨🇳 CNY</option>
+                    <option value="JPY">🇯🇵 JPY</option>
+                    <option value="KRW">🇰🇷 KRW</option>
+                    <option value="TRY">🇹🇷 TRY</option>
+                </select>
+            </div>
+        </div>
+
+        <button class="calculate-btn" onclick="convertCurrency()">
+            🔄 Hisoblash
+        </button>
+
+        <div class="result" id="result">
+            <span class="result-text">Natija shu yerda ko'rinadi</span>
+        </div>
+
+        <p class="note">* Kurslar taxminiy va doimiy yangilanmaydi</p>
+    </div>
+
+    <script>
+        // Valyuta kurslari (1 USD ga nisbatan)
+        const exchangeRates = {
+            USD: 1,
+            EUR: 0.92,
+            UZS: 12800,
+            RUB: 91.5,
+            GBP: 0.79,
+            CNY: 7.24,
+            JPY: 149.5,
+            KRW: 1320,
+            TRY: 32.1
+        };
+
+        function convertCurrency() {
+            const amount = parseFloat(document.getElementById('amount').value);
+            const fromCurrency = document.getElementById('currencyFrom').value;
+            const resultDiv = document.getElementById('result');
+
+            if (isNaN(amount) || amount <= 0) {
+                resultDiv.innerHTML = '<span class="result-text" style="color: red;">❌ Iltimos, miqdorni kiriting!</span>';
+                return;
+            }
+
+            // Natijalarni hisoblash
+            let resultHTML = '<span class="result-text">';
+            
+            // Barcha valyutalar uchun konvertatsiya
+            for (let currency in exchangeRates) {
+                if (currency === fromCurrency) continue; // O'zini ko'rsatmaydi
+                
+                const rate = exchangeRates[currency] / exchangeRates[fromCurrency];
+                const converted = (amount * rate).toFixed(2);
+                const flags = {
+                    USD: '🇺🇸', EUR: '🇪🇺', UZS: '🇺🇿', RUB: '🇷🇺',
+                    GBP: '🇬🇧', CNY: '🇨🇳', JPY: '🇯🇵', KRW: '🇰🇷', TRY: '🇹🇷'
+                };
+                
+                resultHTML += `${converted} ${flags[currency]} ${currency}<br>`;
+            }
+            
+            resultHTML += '</span>';
+            resultDiv.innerHTML = resultHTML;
+        }
+
+        // Enter tugmasi bilan hisoblash
+        document.getElementById('amount').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                convertCurrency();
+            }
+        });
+    </script>
+
+</body>
+</html>
